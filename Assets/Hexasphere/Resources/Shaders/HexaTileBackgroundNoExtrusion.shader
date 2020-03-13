@@ -1,0 +1,200 @@
+﻿Shader "Hexasphere/HexaTileBackgroundNoExtrusion" {
+    Properties {
+        _MainTex ("Main Texture Array", 2DArray) = "white" {}
+        _Color ("Color", Color) = (1,1,1,1)
+        _AmbientColor ("Ambient Color", Color) = (0,0,0)
+        _TileAlpha ("Tile Alpha", Float) = 1
+		[HideInInspector] _SrcBlend ("__src", Float) = 1.0
+		[HideInInspector] _DstBlend ("__dst", Float) = 0.0
+		[HideInInspector] _ZWrite ("__zw", Float) = 1.0
+    }
+    SubShader {
+    	Tags { "Queue" = "Geometry-2" "RenderType"="Opaque" "RenderPipeline" = "" }
+ 		Pass {
+ 			Tags { "LightMode" = "ForwardBase" }
+	      	Blend [_SrcBlend] [_DstBlend]
+	      	ZWrite [_ZWrite]
+
+	        Offset 2, 2
+
+                CGPROGRAM
+				#pragma vertex vert
+				#pragma fragment frag
+				#pragma fragmentoption ARB_precision_hint_fastest
+				#pragma multi_compile_fwdbase nolightmap nodynlightmap novertexlight nodirlightmap
+				#pragma multi_compile _ HEXA_LIT
+				#pragma target 3.5
+				#include "UnityCG.cginc"
+				#include "AutoLight.cginc"
+
+                UNITY_DECLARE_TEX2DARRAY(_MainTex); 
+                fixed4 _Color;
+                fixed _TileAlpha;
+                fixed3 _AmbientColor;
+
+                struct appdata {
+    				float4 vertex   : POSITION;
+					float4 texcoord : TEXCOORD0;
+					fixed4 color    : COLOR;
+    			};
+
+				struct v2f {
+	    			float4 pos   : SV_POSITION;
+	    			float3 uv    : TEXCOORD0;
+	    			fixed4 color : COLOR;
+	    			SHADOW_COORDS(1)
+	    			#if HEXA_LIT
+                    float3 norm  : TEXCOORD2;
+                    #endif
+				};
+
+				v2f vert(appdata v) {
+    				v2f o;
+    				o.pos   = UnityObjectToClipPos(v.vertex);
+    				o.uv    = v.texcoord.xyz;
+    				fixed4 color = v.color * _Color;
+    				color.a *= _TileAlpha;
+    				o.color = color;
+    				TRANSFER_SHADOW(o);
+    				#if HEXA_LIT
+    				o.norm = UnityObjectToWorldNormal(v.vertex.xyz);
+    				#endif
+    				return o;
+    			}
+    		
+    			fixed4 frag (v2f i) : SV_Target {
+    				fixed atten = SHADOW_ATTENUATION(i);
+    				fixed4 color = UNITY_SAMPLE_TEX2DARRAY(_MainTex, i.uv) * i.color;
+    				color.rgb *= atten;
+					#if HEXA_LIT
+                	float d = saturate(dot(i.norm, _WorldSpaceLightPos0.xyz));
+    	            color = color * d;
+    	            #endif
+    	            color.rgb += _AmbientColor;
+    				return color;
+                }
+                ENDCG
+		}
+    }
+
+    SubShader {	// Fallback for old GPUs
+    	Tags { "Queue" = "Geometry-2" "RenderType"="Opaque" "RenderPipeline" = "" }
+ 		Pass {
+ 			Tags { "LightMode" = "ForwardBase" }
+	      	Blend [_SrcBlend] [_DstBlend]
+	      	ZWrite [_ZWrite]
+	        Offset 2, 2
+
+                CGPROGRAM
+				#pragma vertex vert
+				#pragma fragment frag
+				#pragma fragmentoption ARB_precision_hint_fastest
+				#pragma multi_compile_fwdbase nolightmap nodynlightmap novertexlight nodirlightmap
+				#include "UnityCG.cginc"
+				#include "AutoLight.cginc"
+
+                float _ExtrusionMultiplier;
+                fixed4 _Color;
+                fixed _TileAlpha;
+
+                struct appdata {
+    				float4 vertex   : POSITION;
+					fixed4 color    : COLOR;
+    			};
+
+				struct v2f {
+	    			float4 pos   : SV_POSITION;
+	    			fixed4 color : COLOR;
+	    			SHADOW_COORDS(0)
+				};
+
+				v2f vert(appdata v) {
+    				v2f o;
+	                o.pos = UnityObjectToClipPos(v.vertex);
+    				o.color = v.color * _Color;
+    				o.color.a *= _TileAlpha;
+    				TRANSFER_SHADOW(o);
+    				return o;
+    			}
+
+    			fixed4 frag (v2f i) : SV_Target {
+    				fixed atten = SHADOW_ATTENUATION(i);
+    				fixed4 color = i.color;
+    				color.rgb *= atten;
+    				return atten;
+                }
+                ENDCG
+		}
+    }
+
+  SubShader {
+        Tags { "Queue" = "Geometry-2" "RenderType"="Opaque" "RenderPipeline" = "LightweightPipeline" }
+        Pass {
+         //   Tags { "LightMode" = "LightweightForward" }
+            Offset 2, 2
+           	Blend [_SrcBlend] [_DstBlend]
+           	ZWrite [_ZWrite]
+
+                CGPROGRAM
+                #pragma vertex vert
+                #pragma fragment frag
+                #pragma fragmentoption ARB_precision_hint_fastest
+                #pragma multi_compile_fwdbase nolightmap nodynlightmap novertexlight nodirlightmap
+                #pragma multi_compile _ HEXA_LIT
+                #pragma target 3.5
+                #include "UnityCG.cginc"
+                #include "AutoLight.cginc"
+
+                UNITY_DECLARE_TEX2DARRAY(_MainTex); 
+				fixed4 _Color;
+                fixed _TileAlpha;
+                fixed3 _AmbientColor;
+
+                struct appdata {
+                    float4 vertex   : POSITION;
+                    float4 texcoord : TEXCOORD0;
+                    fixed4 color    : COLOR;
+                };
+
+                struct v2f {
+                    float4 pos   : SV_POSITION;
+                    float3 uv    : TEXCOORD0;
+                    fixed4 color : COLOR;
+                    SHADOW_COORDS(1)
+	    			#if HEXA_LIT
+                    float3 norm  : TEXCOORD2;
+                    #endif
+                };
+
+                v2f vert(appdata v) {
+                    v2f o;
+                    o.pos   = UnityObjectToClipPos(v.vertex);
+                    o.uv    = v.texcoord.xyz;
+                    o.color = v.color * _Color;
+                    o.color.a *= _TileAlpha;
+                    TRANSFER_SHADOW(o);
+    				#if HEXA_LIT
+    				o.norm = UnityObjectToWorldNormal(v.vertex.xyz);
+    				#endif
+                    return o;
+                }
+            
+                fixed4 frag (v2f i) : SV_Target {
+    				fixed atten = SHADOW_ATTENUATION(i);
+    				fixed4 color = UNITY_SAMPLE_TEX2DARRAY(_MainTex, i.uv) * i.color;
+    				color.rgb *= atten;
+					#if HEXA_LIT
+                	float d = saturate(dot(i.norm, _WorldSpaceLightPos0.xyz));
+    	            color = color * d;
+    	            #endif
+    	            color.rgb += _AmbientColor;
+    	            return color;
+                }
+                ENDCG
+        }
+    }
+
+
+
+    Fallback "Diffuse"
+}
