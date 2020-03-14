@@ -18,6 +18,7 @@ public class harvestLines : MonoBehaviour
 
     public bool testingLinq;
     public bool testingNonLinq;
+    public bool showLine;
 
     //LineRenderer variables
     public Color c1 = Color.yellow;
@@ -119,7 +120,8 @@ public class harvestLines : MonoBehaviour
    
     void Update()
     {
-        
+        if (testingLine) {
+
         LineRenderer lineRenderer = GetComponent<LineRenderer>();
         
         refreshTime -= Time.deltaTime;
@@ -149,6 +151,6 @@ public class harvestLines : MonoBehaviour
             lineRenderer.SetPosition(0, gameObject.transform.position);
             lineRenderer.SetPosition(1, robots.First().position);
         }*/
-
+        }
     }
 }

@@ -71,7 +71,7 @@ public class calculateDestinationPool : MonoBehaviour
 			//Debug.Log("calculating...");
 		}
         if (robotParent.childCount > 0){
-            //sendDestinations(autoDestinations);
+            sendDestinations(autoDestinations);
         }
         //Debug.Log("Sending destinations now");
     }

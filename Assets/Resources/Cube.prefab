@@ -170,6 +170,7 @@ MonoBehaviour:
   healthPercentage: 0
   selfColor: {r: 0, g: 0, b: 0, a: 0}
   selfMaterial: {fileID: 0}
+  invincible: 0
   testingHPReduction: 0
 --- !u!114 &7224030877053009574
 MonoBehaviour:

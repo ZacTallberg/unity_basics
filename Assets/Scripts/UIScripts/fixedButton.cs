@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+
 [ExecuteInEditMode]
 public class fixedButton : MonoBehaviour
 {
@@ -12,8 +13,9 @@ public class fixedButton : MonoBehaviour
     public sendUnit sendObj;
    void OnGUI()
     {
-        
-    if (GUI.Button (new Rect(Screen.width-(leftright*5),(Screen.height*(updown/50)),width,height), "Button text!"))
+    
+
+    if (GUI.Button (new Rect(Screen.width-(leftright*5),(Screen.height*(updown/50)),width,height), "Send robots"))
         {
         ButtonPressed();
         };
